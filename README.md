@@ -50,7 +50,4 @@ API Read Access Token (v4 auth)
 eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1MjA1ODZlYzEwN2ViZWVmNGFmM2ExODVlZTEwYWU5YiIsInN1YiI6IjVkOGQ1MTVkMTcyZDdmMDAxNzUyNDJjYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ueDkk5SwjlsnM9r6zzrzjOIz6Sd_wNgQR_AInjcn3F4
 
 https://developers.themoviedb.org/3/getting-started/introduction
-
-
-Links:
-https://stackoverflow.com/questions/1070760/javascript-function-in-href-vs-onclick
+https://babeljs.io/docs/en/next/babel-plugin-proposal-class-properties.html

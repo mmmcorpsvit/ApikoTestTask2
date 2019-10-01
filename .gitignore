@@ -91,3 +91,4 @@ typings/
 
 .gitignore
 .idea/
+dist/

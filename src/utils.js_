@@ -1,0 +1,83 @@
+handleMoviePage(obj) {
+    // e.preventDefault();
+    // e.preventDefault();
+    // let href = obj.attr("href");
+    this.state.movie_page = obj.getAttribute("data-page");
+
+    this.render_main_page();
+    return false;
+}
+
+
+handleMovie(obj) {
+    console.log("handle movie");
+
+    // По кліку на конкретний елемент списку, потрібно показати заголовок, опис, постер, кількість сезонів, кількість епізодів і список сезонів даного TV show.
+    // btn.onclick(obj);
+
+    let res = {
+        activity_page: "handleMovie",
+        object: obj
+    };
+
+    this.modal_view(res);
+}
+
+
+function ajax(
+  api_url,
+  aditional_params,
+  onError = undefined,
+  onDone = undefined
+) {
+  const API_KEY = "520586ec107ebeef4af3a185ee10ae9b";
+
+  let res = undefined;
+  let data = "{}";
+  let query_params = `?language=en-US&api_key=${API_KEY}`;
+  if (aditional_params) {
+    query_params += aditional_params;
+  }
+
+  let url = `${api_url}${query_params}`;
+  let xhr = new XMLHttpRequest();
+  // xhr.withCredentials = true;
+
+  xhr.addEventListener("readystatechange", function() {
+    if (this.readyState === this.DONE) {
+      res = this.responseText;
+      // console.log(this.responseText);
+      // document.getElementById("app").innerHTML = res['page'];
+      if (onDone) {
+        onDone(JSON.parse(this.responseText));
+      }
+    }
+  });
+
+  // TODO: refactor CORS
+
+  xhr.onerror = onError;
+  // xhr.onloadend = onDone;
+  xhr.open("GET", url);
+
+  // xhr.open("GET", `https://api.themoviedb.org/3/tv/top_rated${query_params}`);
+
+  // xhr.open("GET", `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=Ponyo&year=2008`);
+  // xhr.open("GET", `https://api.themoviedb.org/3/authentication/token/validate_with_login?api_key=${API_KEY}`);
+
+  xhr.setRequestHeader("Origin", "*");
+  // xhr.setRequestHeader("Origin", location.origin);
+  // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+  xhr.setRequestHeader("Content-Type", "application/json");
+  // xhr.setRequestHeader("Accept", "application/json");
+  // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+  // xhr.setRequestHeader("Access-Control-Allow-Headers", "*");
+  // xhr.setRequestHeader("Access-Control-Allow-Credentials", "true");
+  // xhr.setRequestHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  // xhr.setRequestHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+  // xhr.setRequestHeader('Access-Control-Allow-Headers', '*');
+  // xhr.setRequestHeader('Content-type', 'application/ecmascript');
+  // xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+
+  xhr.send(data);
+}

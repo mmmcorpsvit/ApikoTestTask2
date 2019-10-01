@@ -1,267 +1,147 @@
-// import "./styles.css";
-// import './themoviedb';
-// import './utils';
-
-document.getElementById("app").innerHTML = `<h1>Please wait, loading...</h1><div></div>`;
+import "./styles.css";
 
 // https://api.themoviedb.org/3/tv/top_rated?api_key=520586ec107ebeef4af3a185ee10ae9b&language=en-US&page=1
 
-const BASE_URL = 'https://api.themoviedb.org/3/';
+class App {
+    state = {movies_type: "popular"};
 
-const MOVIE_TYPES = {
-    popular: {
-        name: 'Popular TV shows',
-        url: `${BASE_URL}tv/popular`
-    },
-    rated: {
-        name: 'Top Rated TV shows',
-        url: `${BASE_URL}tv/top_rated`
-    }
-};
+    constructor() {
+        // TODO: Add @babel/plugin-proposal-class-properties (https://git.io/vb4SL) to the 'plugins' section of your Babel config to enable transformation.
 
-var state = {};
+        this.root = document.getElementById("app");
 
-// *********************************** APP The Movie DB ****************************************
-// var movie = {};
-class app_themoviedb {
-    API_KEY = '';
-    base_url = '';
+        this.API_KEY = "520586ec107ebeef4af3a185ee10ae9b";
+        this.URL_BASE = "https://api.themoviedb.org/3/";
+        this.URL_PARAMS = `?language=en-US&api_key=${this.API_KEY}`;
 
-    constructor(API_KEY) {
-        this.API_KEY = API_KEY;
-        // this.base_url = `https://api.themoviedb.org/3/tv/top_rated?language=en-US&api_key=${API_KEY}`;
-    }
-
-    query(param) {
-        // let res = `https://api.themoviedb.org/3/tv/top_rated?language=en-US&api_key=${API_KEY}`;
-        let res = `https://api.themoviedb.org/3/tv/top_rated?language=en-US&api_key=${API_KEY}`;
-        console.log(res);
-        return res;
-    }
-
-
-    getPopularTVshows() {
-    }
-
-    getTopRatedTVshows() {
-    }
-}
-
-// *********************************** APP The Movie DB ****************************************
-
-
-// ****************************************     Utils   ********************************
-// class ajax {
-//     onBeforeSend = undefined;
-//     onError = undefined;
-//
-//     on
-// }
-
-function ajax(api_url, aditional_params, onError = undefined, onDone = undefined) {
-    const API_KEY = '520586ec107ebeef4af3a185ee10ae9b';
-
-    var res = undefined;
-    var data = "{}";
-    var query_params = `?language=en-US&api_key=${API_KEY}`;
-    if (aditional_params) {
-        query_params += aditional_params;
-    }
-
-    var url = `${api_url}${query_params}`;
-    var xhr = new XMLHttpRequest();
-    // xhr.withCredentials = true;
-
-    xhr.addEventListener("readystatechange", function () {
-        if (this.readyState === this.DONE) {
-            res = this.responseText;
-            // console.log(this.responseText);
-            // document.getElementById("app").innerHTML = res['page'];
-            if (onDone) {
-                onDone(JSON.parse(this.responseText));
+        this.MOVIE_TYPES = {
+            popular: {
+                name: "Popular TV shows",
+                url: `${this.URL_BASE}tv/popular${this.URL_PARAMS}`
+            },
+            rated: {
+                name: "Top Rated TV shows",
+                url: `${this.URL_BASE}tv/top_rated${this.URL_PARAMS}`
             }
+        };
+
+        //this.state = {movies_type: "popular"};
+    }
+
+    removeElements(parent_element) {
+        // clear html childrens
+        while (parent_element.firstChild) {
+            parent_element.removeChild(parent_element.firstChild);
         }
-    });
+    }
 
-    // TODO: refactor CORS
+    main() {
+        this.home_page_view();
+    }
 
-    xhr.onerror = onError;
-    // xhr.onloadend = onDone;
-    xhr.open("GET", url);
+    home_page_view(data) {
+        let movie_url = this.MOVIE_TYPES[this.state.movies_type]["url"];
+        // let res = {state: this.state};
+        let aditional_params = this.state.movie_page
+            ? `&page=${this.state.movie_page}`
+            : "";
 
-    // xhr.open("GET", `https://api.themoviedb.org/3/tv/top_rated${query_params}`);
+        let url = `${movie_url}${aditional_params}`;
 
+        fetch(url)
+            .then(resp => resp.json())
+            .then(function (data) {
+                console.log(data);
+                // res["data"] = data;
+                app.home_page_render(data, "app");
+            })
+            .catch(function (error) {
+                console.log(JSON.stringify(error));
+            });
+    }
 
-    // xhr.open("GET", `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=Ponyo&year=2008`);
-    // xhr.open("GET", `https://api.themoviedb.org/3/authentication/token/validate_with_login?api_key=${API_KEY}`);
-
-    xhr.setRequestHeader("Origin", "*");
-    // xhr.setRequestHeader("Origin", location.origin);
-    // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    // xhr.setRequestHeader("Accept", "application/json");
-    // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
-    // xhr.setRequestHeader("Access-Control-Allow-Headers", "*");
-    // xhr.setRequestHeader("Access-Control-Allow-Credentials", "true");
-    // xhr.setRequestHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
-    // xhr.setRequestHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
-    // xhr.setRequestHeader('Access-Control-Allow-Headers', '*');
-    // xhr.setRequestHeader('Content-type', 'application/ecmascript');
-    // xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
-
-
-    xhr.send(data);
-}
-
-// ****************************************     Utils   ********************************
-
-// ************************* Movie Type Selector ***************************************
-function movie_type_view(active_movie_type) {
-    // var res = '';
-
-    var res = '';
-
-    for (let index in MOVIE_TYPES) {
-        let mtype = MOVIE_TYPES[index];
-        let active = '';
-        if (active_movie_type === index) {
-            active = 'checked="checked"'
+    home_page_render(data, root_id = undefined) {
+        let root_id_element = this.root;
+        if (root_id !== undefined) {
+            root_id_element = root_id;
         }
 
+        this.removeElements(this.root);
 
-        res += `<label><input class="movie_type_radio" type="radio" name="movie_type" value="${index}" onchange="handleMovieTypeClick(this);" ${active}>
-                    ${mtype.name}
-                </label>`;
-    }
+        let results = data["results"];
+        let movies = "";
 
-    res = `
-    <div>
- 
-    <form id="select_movie_type" action="" method="post">
-        <fieldset> <legend><b>Movie type:</b></legend>
-        ${res}
-<!--        <label><input type="radio" name="movie_type" value="popular" checked="checked">Popular TV shows</label>-->
-<!--        <label><input type="radio" name="movie_type" value="rated">Top Rated TV shows</label>-->
-        </fieldset>
-<!--        <p><input type="reset"> <input type="submit"></p>-->
-        </form>
-    </div>
-    `;
+        // choice movie type Popular/Rated
+        // TODO: check index hasOwnProprty ???
+        for (let index in this.MOVIE_TYPES) {
+            let movie_type = this.MOVIE_TYPES[index];
 
-    return res;
-}
+            let id = `radio-${index}-id`;
+            var row = document.createElement('div');
 
-function handleMovieTypeClick(obj) {
-    // let movie_type = obj.value;
-    state['movies_type'] = obj.value;
-    state.movie_page = 1;
-    home_view();
-}
+            const radio = document.createElement("input");
+            radio.setAttribute('id', id);
+            radio.setAttribute('type', 'radio');
+            radio.setAttribute('name', 'radio_group_movie_type');
+            radio.setAttribute('value', index);
 
-// ************************* Movie Type Selector ***************************************
+            if (this.state.movies_type === index){
+                radio.setAttribute('checked', 'checked');
+            }
+            row.appendChild(radio);
 
-function render_pagination(data) {
-    let handler = `href="#" onclick="return handleMoviePage(this)"`;
-
-    let res = `<li><a ${handler} data-page="1">First</a></li>`;
-
-    if (data.page - 1 > 1) {
-        res += `<li><a ${handler} data-page="${data.page - 1}">Prior</a></li>`;
-    }
+            radio.addEventListener('change', (e) => {
+                //e.preventDefault();
+                console.log(index);
+                this.state.movie_type = index;
+                this.home_page_view();
+            });
 
 
-    if (data.page + 1 < data.total_pages) {
-        res += `<li><a ${handler} data-page="${data.page + 1}">Next</a></li>`;
-    }
+            const label = document.createElement('label');
+            label.setAttribute('for', id);
+            label.innerText = movie_type["name"];
 
-    res += `<li><a ${handler} data-page="${data.total_pages}">Last</a></li>
-
-    <br>
-    page: ${data.page}
-    <br>
-    total pages: ${data.total_pages}`;
-    return res;
-}
-
-function home_view(data) {
-    let movie_url = MOVIE_TYPES[state.movies_type]['url'];
-    let res = {'state': state};
-
-    let aditional_params = '';
-
-    if (state.movie_page) {
-        aditional_params = `&page=${state.movie_page}`
-    }
-
-
-    ajax(
-        movie_url,
-        aditional_params,
-        onError = function () {
-            alert('Ajax error!');
-        },
-
-        onDone = function (data) {
-            res['data'] = data;
-            // home_view(data);
-            home_render(res);
+            // radio.innerText = 'fddfgdfg';
+            row.appendChild(label);
+            this.root.appendChild(row);
         }
-    );
 
-}
+        // this.pagination_render(data, root_html);
 
-function handleMoviePage(obj) {
-    // e.preventDefault();
-    // e.preventDefault();
-    // var href = obj.attr("href");
-    state.movie_page = obj.getAttribute('data-page');
-
-    home_view();
-    return false;
-}
+        // pagination
+        let pagination = {
+            page: data["page"],
+            total_results: data["total_results"],
+            total_pages: data["total_pages"]
+        };
 
 
-function home_render(data, root_id = undefined) {
+        // movies
+        for (let index in results) {
+            let movie = results[index];
+            const anchor = document.createElement("a");
+            const li = document.createElement("li");
+            anchor.setAttribute("href", "#");
+            anchor.innerText = movie.name;
 
-    let root_id_element = 'app';
-    if (root_id !== undefined) {
-        root_id_element = root_id;
-    }
+            // TODO: UGLY ???
+            // let event_handler = this.handle_home_page_movie_click;
+            anchor.addEventListener("click", (e) => {
+                e.preventDefault();
+                this.handle_home_page_movie_click({
+                    event_page: 'main_page_movie_click',
+                    movie_type: this.state.movies_type,
+                    object: movie
+                });
+                //this.handleMovie(this);
+            });
+            li.appendChild(anchor);
+            this.root.appendChild(li);
+        }
 
-    document.getElementById(root_id_element).innerHTML = '';
-
-    let handler = `onclick="handleMovie(this);return false;"`;
-
-    let res = '';
-    // alert('Ajax done 3!');
-    // res = `Done !!!! Loaded: ${data['total_results']}`;
-
-
-    let results = data.data['results'];
-    let movies = '';
-
-    let pagination = {
-        page: data.data['page'],
-        total_results: data.data['total_results'],
-        total_pages: data.data['total_pages']
-    };
-
-    for (let index in results) {
-        let movie = results[index];
-        movies += `<li><a href="#" 
-            data-type="${data.state.movies_type}" 
-            data-id="${movie.id}" 
-            data-name="${movie.name}"
-            data-overview="${movie.overview}"
-            
-            data-poster="${movie.poster_path}"
-               
-            ${handler}>${movie.name}</a></li>`;
-    }
-
-
-    res = `
-    ${movie_type_view(data.state.movies_type)}
+        let res = `
+    ${this.movie_type_view(data.state.movies_type)}
 
     <ul>
         ${movies}        
@@ -269,139 +149,130 @@ function home_render(data, root_id = undefined) {
   
     <div class="pagination">
         <ul >
-            ${render_pagination(pagination)}
+            ${this.render_pagination(pagination)}
         </ul>
     </div>
     `;
 
-    // res += `
-    // <div id="movie_details">
-    // </div>
-    //
-    // <div id="movie_details">
-    // </div>
-    //
-    // <div id="movie_details">
-    // </div>
-    // `;
+        //document.getElementById("app").innerHTML = res;
+    }
 
-    document.getElementById("app").innerHTML = res;
-}
+    // ************************* Movie Type Selector ***************************************
+    movie_type_view(active_movie_type) {
+        // let res = '';
 
-function modal_view(data) {
-    let aditional_params = '';
-    // let activity_page = data.activity_page;
+        let res = "";
 
-    // var e = data.object.getAttribute('data-name');
-    // TODO: poster fix ?
+        let res2 = "";
 
-    let res = '';
-    let movie_url = '';
+        //    res2 = radioInput;
 
-    if (data.activity_page === 'handleMovie') {
+        for (let index in this.MOVIE_TYPES) {
+            let mtype = this.MOVIE_TYPES[index];
+            let active = "";
+
+            let radioInput = document.createElement("input");
+            radioInput.setAttribute("type", "radio");
+            radioInput.setAttribute("name", "movie_type");
+
+            if (active_movie_type === index) {
+                radioInput.setAttribute("checked", "checked");
+            }
+
+            radioInput.addEventListener("onchange", this.handleRadioChange);
+
+            res2 += radioInput;
+        }
+
+        for (let index in this.MOVIE_TYPES) {
+            let mtype = this.MOVIE_TYPES[index];
+            let active = "";
+            if (active_movie_type === index) {
+                active = 'checked="checked"';
+            }
+
+            res += `<label><input class="movie_type_radio" type="radio" name="movie_type" value="${index}" onchange="app.handleMovieTypeClick(this, event)" ${active}>
+                    ${mtype.name}
+                </label>`;
+        }
+
         res = `
-            id: ${data.object.getAttribute('data-id')} <br>
-            name: ${data.object.getAttribute('data-name')} <br><br>
-            overview: ${data.object.getAttribute('data-overview')} <br><br>
-            poster: ${data.object.getAttribute('data-poster')} <br>        
-        `;
+    <div>
+ 
+    <form id="select_movie_type" action="" method="post">
+        <fieldset> <legend><b>Movie type:</b></legend>
+        ${res}
+        </fieldset>
+        </form>
+    </div>
+    `;
 
-        // ???????????????
-        movie_url = `${BASE_URL}tv/popular`;
+        return res2;
+    }
 
+    handleRadioChange(obj, e) {
+        // let movie_type = obj.value;
+        this.state["movies_type"] = obj.value;
+        this.state.movie_page = 1;
+        this.home_render();
+    }
 
+    // ************************* Movie Type Selector ***************************************
+
+    render_pagination(data) {
+        let handler = `href="#" onclick="return handleMoviePage(this)"`;
+
+        let res = `<li><a ${handler} data-page="1">First</a></li>`;
+
+        if (data.page - 1 > 1) {
+            res += `<li><a ${handler} data-page="${data.page - 1}">Prior</a></li>`;
+        }
+
+        if (data.page + 1 < data.total_pages) {
+            res += `<li><a ${handler} data-page="${data.page + 1}">Next</a></li>`;
+        }
+
+        res += `<li><a ${handler} data-page="${data.total_pages}">Last</a></li>
+
+    <br>
+    page: ${data.page}
+    <br>
+    total pages: ${data.total_pages}`;
+        return res;
     }
 
 
-    document.getElementById("modal_body").innerHTML = res;
+    handle_home_page_movie_click(data) {
+        // TODO: add all modal pages !
+        let aditional_params = "";
+        // let activity_page = data.activity_page;
 
-    btn.onclick(data);
-    return false;
+        // let e = data.object.getAttribute('data-name');
+        // TODO: poster fix ?
 
-    ajax(
-        movie_url,
-        aditional_params,
-        onError = function () {
-            alert('Ajax error!');
-        },
+        let res = "";
+        let movie_url = "";
 
-        onDone = function (data) {
-            res['data'] = data;
-            // home_view(data);
-            home_render(res);
+        if (data.event_page === "main_page_movie_click") {
+            res = `
+            id: ${data.object.id} <br>
+            name: ${data.object.name} <br><br>
+            overview: ${data.object.overview} <br><br>
+            poster: ${data.object['poster_path']} <br>        
+        `;
+
+            // ???????????????
+            // movie_url = `${this.URL_BASE}tv/popular`;
         }
-    );
 
-    // ren
+        document.getElementById("modal_body").innerHTML = res;
 
-    // ajax(
-    //     movie_url,
-    //     aditional_params,
-    //     onError = function () {
-    //         alert('Ajax error!');
-    //     },
-    //
-    //     onDone = function (data) {
-    //         res['data'] = data;
-    //         // home_view(data);
-    //         home_render(res);
-    //     }
-    // );
+        btn.onclick(data);
+        return false;
+    }
 
 
 }
 
-
-function handleMovie(obj) {
-
-    // По кліку на конкретний елемент списку, потрібно показати заголовок, опис, постер, кількість сезонів, кількість епізодів і список сезонів даного TV show.
-    // btn.onclick(obj);
-
-    let res = {
-        activity_page: 'handleMovie',
-        object: obj,
-    };
-
-    modal_view(res);
-
-}
-
-function path(routher, view, name) {
-    return {
-        'routher': routher,
-        'view': view,
-        'name': name
-    };
-}
-
-// let url = [
-//     path('', view = home_view(), name = 'home'),
-// ];
-
-
-// movie.init(){}
-
-
-function setInitialState(data) {
-    state = data;
-}
-
-function main() {
-    setInitialState({
-        'movies_type': 'popular',
-    });
-
-
-    // routhing
-    home_view();
-
-    // var app = new app_themoviedb();
-    // console.log(app.query('ffdg'));
-
-
-}
-
-main();
-
-
-//document.getElementById("app").innerHTML = ajax();
+const app = new App();
+app.main();
