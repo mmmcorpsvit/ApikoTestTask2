@@ -3,30 +3,25 @@ import "./styles.css";
 // https://api.themoviedb.org/3/tv/top_rated?api_key=520586ec107ebeef4af3a185ee10ae9b&language=en-US&page=1
 
 class App {
-    state = {movies_type: "popular"};
+    state = { movies_type: "popular" };
 
-    constructor() {
-        // TODO: Add @babel/plugin-proposal-class-properties (https://git.io/vb4SL) to the 'plugins' section of your Babel config to enable transformation.
+    root = document.getElementById("app");
+    modal = document.getElementById("modal_body");
 
-        this.root = document.getElementById("app");
+    API_KEY = "520586ec107ebeef4af3a185ee10ae9b";
+    URL_BASE = "https://api.themoviedb.org/3/";
+    URL_PARAMS = `?language=en-US&api_key=${this.API_KEY}`;
 
-        this.API_KEY = "520586ec107ebeef4af3a185ee10ae9b";
-        this.URL_BASE = "https://api.themoviedb.org/3/";
-        this.URL_PARAMS = `?language=en-US&api_key=${this.API_KEY}`;
-
-        this.MOVIE_TYPES = {
-            popular: {
-                name: "Popular TV shows",
-                url: `${this.URL_BASE}tv/popular${this.URL_PARAMS}`
-            },
-            rated: {
-                name: "Top Rated TV shows",
-                url: `${this.URL_BASE}tv/top_rated${this.URL_PARAMS}`
-            }
-        };
-
-        //this.state = {movies_type: "popular"};
-    }
+    MOVIE_TYPES = {
+        popular: {
+            name: "Popular TV shows",
+            url: `${this.URL_BASE}tv/popular${this.URL_PARAMS}`
+        },
+        rated: {
+            name: "Top Rated TV shows",
+            url: `${this.URL_BASE}tv/top_rated${this.URL_PARAMS}`
+        }
+    };
 
     removeElements(parent_element) {
         // clear html childrens
@@ -50,13 +45,14 @@ class App {
 
         fetch(url)
             .then(resp => resp.json())
-            .then(function (data) {
-                console.log(data);
+            .then(function(data) {
+                // console.log(data);
                 // res["data"] = data;
-                app.home_page_render(data, "app");
+                app.home_page_render(data);
             })
-            .catch(function (error) {
-                console.log(JSON.stringify(error));
+            .catch(function(error) {
+                // TODO: add caption on UI
+                //alert(JSON.stringify(error));
             });
     }
 
@@ -77,45 +73,37 @@ class App {
             let movie_type = this.MOVIE_TYPES[index];
 
             let id = `radio-${index}-id`;
-            var row = document.createElement('div');
+            let movie_choice_row = document.createElement("div");
 
             const radio = document.createElement("input");
-            radio.setAttribute('id', id);
-            radio.setAttribute('type', 'radio');
-            radio.setAttribute('name', 'radio_group_movie_type');
-            radio.setAttribute('value', index);
+            radio.setAttribute("id", id);
+            radio.setAttribute("type", "radio");
+            radio.setAttribute("name", "radio_group_movie_type");
+            radio.setAttribute("value", index);
 
-            if (this.state.movies_type === index){
-                radio.setAttribute('checked', 'checked');
+            if (this.state.movies_type === index) {
+                radio.setAttribute("checked", "checked");
             }
-            row.appendChild(radio);
+            movie_choice_row.appendChild(radio);
 
-            radio.addEventListener('change', (e) => {
+            radio.addEventListener("change", e => {
                 //e.preventDefault();
-                console.log(index);
-                this.state.movie_type = index;
+                // console.log(index);
+                this.state.movies_type = index;
+                this.state.movie_page = 1;
                 this.home_page_view();
             });
 
-
-            const label = document.createElement('label');
-            label.setAttribute('for', id);
+            const label = document.createElement("label");
+            label.setAttribute("for", id);
             label.innerText = movie_type["name"];
 
             // radio.innerText = 'fddfgdfg';
-            row.appendChild(label);
-            this.root.appendChild(row);
+            movie_choice_row.appendChild(label);
+            this.root.appendChild(movie_choice_row);
         }
 
-        // this.pagination_render(data, root_html);
-
-        // pagination
-        let pagination = {
-            page: data["page"],
-            total_results: data["total_results"],
-            total_pages: data["total_pages"]
-        };
-
+        this.root.appendChild(document.createElement("hr"));
 
         // movies
         for (let index in results) {
@@ -127,10 +115,10 @@ class App {
 
             // TODO: UGLY ???
             // let event_handler = this.handle_home_page_movie_click;
-            anchor.addEventListener("click", (e) => {
+            anchor.addEventListener("click", e => {
                 e.preventDefault();
                 this.handle_home_page_movie_click({
-                    event_page: 'main_page_movie_click',
+                    event_page: "main_page_movie_click",
                     movie_type: this.state.movies_type,
                     object: movie
                 });
@@ -140,110 +128,88 @@ class App {
             this.root.appendChild(li);
         }
 
-        let res = `
-    ${this.movie_type_view(data.state.movies_type)}
+        // this.pagination_render(data, root_html);
 
-    <ul>
-        ${movies}        
-    </ul>
-  
-    <div class="pagination">
-        <ul >
-            ${this.render_pagination(pagination)}
-        </ul>
-    </div>
-    `;
-
-        //document.getElementById("app").innerHTML = res;
+        // pagination
+        this.root.appendChild(document.createElement("hr"));
+        this.render_pagination(root_id_element, data);
     }
 
-    // ************************* Movie Type Selector ***************************************
-    movie_type_view(active_movie_type) {
-        // let res = '';
+    render_pagination(html_root, data) {
+        // event_function
+        function CreateButton(obj, text, data_page, enabled, ul_root) {
+            let li = document.createElement("li");
+            let href = document.createElement("a");
+            href.innerText = text;
+            href.setAttribute("href", "#");
+            href.addEventListener("click", e => {
+                obj.state.movie_page = data_page;
+                obj.home_page_view();
+            });
 
-        let res = "";
+            li.appendChild(href);
 
-        let res2 = "";
+            ul_root.appendChild(li);
+            //return res;
+        }
 
-        //    res2 = radioInput;
+        let pagination_buttons = ["First", "Prior", "Next", "Last"];
 
-        for (let index in this.MOVIE_TYPES) {
-            let mtype = this.MOVIE_TYPES[index];
-            let active = "";
+        let pagination_row = document.createElement("div");
+        pagination_row.setAttribute("class", "pagination_row");
 
-            let radioInput = document.createElement("input");
-            radioInput.setAttribute("type", "radio");
-            radioInput.setAttribute("name", "movie_type");
+        let ul_list = document.createElement("ul");
 
-            if (active_movie_type === index) {
-                radioInput.setAttribute("checked", "checked");
+        for (let button in pagination_buttons) {
+            let data_page = 3;
+            let enabled = true;
+
+            switch (button) {
+                case "0":
+                    data_page = 1;
+                    enabled = data.total_pages > 0;
+                    break;
+                case "1":
+                    data_page = data.page - 1;
+                    enabled = data.page > 1;
+                    break;
+                case "2":
+                    data_page = data.page + 1;
+                    enabled = data.page < data.total_pages;
+                    break;
+                case "3":
+                    data_page = data.total_pages;
+                    enabled = data.total_pages > 0;
+                    break;
+
+                default:
             }
 
-            radioInput.addEventListener("onchange", this.handleRadioChange);
-
-            res2 += radioInput;
-        }
-
-        for (let index in this.MOVIE_TYPES) {
-            let mtype = this.MOVIE_TYPES[index];
-            let active = "";
-            if (active_movie_type === index) {
-                active = 'checked="checked"';
+            if (!enabled) {
+                continue;
             }
 
-            res += `<label><input class="movie_type_radio" type="radio" name="movie_type" value="${index}" onchange="app.handleMovieTypeClick(this, event)" ${active}>
-                    ${mtype.name}
-                </label>`;
+            CreateButton(
+                this,
+                pagination_buttons[button],
+                data_page,
+                enabled,
+                ul_list
+            );
         }
 
-        res = `
-    <div>
- 
-    <form id="select_movie_type" action="" method="post">
-        <fieldset> <legend><b>Movie type:</b></legend>
-        ${res}
-        </fieldset>
-        </form>
-    </div>
-    `;
+        pagination_row.appendChild(ul_list);
 
-        return res2;
+        this.root.appendChild(pagination_row);
+        let page_info = document.createElement("p");
+        page_info.innerText = `Page ${data.page} / ${data.total_pages}`;
+        this.root.appendChild(page_info);
     }
-
-    handleRadioChange(obj, e) {
-        // let movie_type = obj.value;
-        this.state["movies_type"] = obj.value;
-        this.state.movie_page = 1;
-        this.home_render();
-    }
-
-    // ************************* Movie Type Selector ***************************************
-
-    render_pagination(data) {
-        let handler = `href="#" onclick="return handleMoviePage(this)"`;
-
-        let res = `<li><a ${handler} data-page="1">First</a></li>`;
-
-        if (data.page - 1 > 1) {
-            res += `<li><a ${handler} data-page="${data.page - 1}">Prior</a></li>`;
-        }
-
-        if (data.page + 1 < data.total_pages) {
-            res += `<li><a ${handler} data-page="${data.page + 1}">Next</a></li>`;
-        }
-
-        res += `<li><a ${handler} data-page="${data.total_pages}">Last</a></li>
-
-    <br>
-    page: ${data.page}
-    <br>
-    total pages: ${data.total_pages}`;
-        return res;
-    }
-
 
     handle_home_page_movie_click(data) {
         // TODO: add all modal pages !
+        console.log("modal !");
+
         let aditional_params = "";
         // let activity_page = data.activity_page;
 
@@ -258,20 +224,21 @@ class App {
             id: ${data.object.id} <br>
             name: ${data.object.name} <br><br>
             overview: ${data.object.overview} <br><br>
-            poster: ${data.object['poster_path']} <br>        
+            poster: ${data.object["poster_path"]} <br>        
         `;
 
             // ???????????????
             // movie_url = `${this.URL_BASE}tv/popular`;
         }
 
-        document.getElementById("modal_body").innerHTML = res;
+        alert(res);
+        this.modal.innerHTML = res;
+        this.modal.style.display = "block";
+        // document.getElementById("modal_body").innerHTML = res;
 
-        btn.onclick(data);
+        //btn.onclick(data);
         return false;
     }
-
-
 }
 
 const app = new App();

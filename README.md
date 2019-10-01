@@ -51,3 +51,20 @@ eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1MjA1ODZlYzEwN2ViZWVmNGFmM2ExODVlZTEwYWU5YiIsInN
 
 https://developers.themoviedb.org/3/getting-started/introduction
 https://babeljs.io/docs/en/next/babel-plugin-proposal-class-properties.html
+
+
+original babelrc
+{
+  "presets": [
+    "env"
+  ],
+  "plugins": [
+    "transform-runtime"
+  ],
+  "parserOpts": {
+    "plugins": [
+      "dynamicImport"
+    ]
+  }
+}
+
